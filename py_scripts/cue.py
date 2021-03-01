@@ -62,14 +62,18 @@ def main():
         if command == 'q':
             break
 
-        if command == 's':
+        elif command == 's':
             server_address = input('Enter new server address:')
             print('Server set to: "'+server_address+'"')
 
-        if command.isdecimal():
+        elif command.isdecimal():
             if int(command) < len(sub_file_list):
                 filename = sub_file_list[int(command)]
                 play_subtitle(filename)
+            else:
+                print('Sketch does not exist')
 
+        else:
+            print('Command not found!')
 
 main()
