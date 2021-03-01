@@ -45,6 +45,7 @@ def play_subtitle(filename):
 def main():
     sub_file_list = get_sub_file_list()
     while True:
+        post_lyric('')
 
         print('\n\nChoose sketch or write "q" to quit:')
         print_file_names(sub_file_list)
