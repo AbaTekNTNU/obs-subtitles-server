@@ -3,6 +3,8 @@ from os.path import isfile, join
 import keyboard
 import requests
 
+server_address = 'http://localhost:3000'
+
 
 def get_sub_file_list():
     return [f for f in listdir('subs') if isfile(join('subs', f))]
@@ -24,7 +26,7 @@ def read_sub_file(filename):
 
 
 def post_lyric(lyric):
-    x = requests.post('http://localhost:3000/', data={'text': lyric})
+    x = requests.post(server_address, data={'text': lyric})
     print(x.text)
 
 
@@ -43,16 +45,26 @@ def play_subtitle(filename):
 
 
 def main():
+    global server_address
+
     sub_file_list = get_sub_file_list()
     while True:
-        post_lyric('')
+        try:
+            post_lyric('')
+            print('\n\nPosting to server: "'+server_address+'"')
+            print('Choose sketch or write "q" to quit or "s" to change server address:')
+            print_file_names(sub_file_list)
+        except:
+            print('\n\nCOULD NOT POST TO SERVER! Change to a working one using command "s"')
 
-        print('\n\nChoose sketch or write "q" to quit:')
-        print_file_names(sub_file_list)
         command = input("\nEnter command: ")
 
         if command == 'q':
             break
+
+        if command == 's':
+            server_address = input('Enter new server address:')
+            print('Server set to: "'+server_address+'"')
 
         if command.isdecimal():
             if int(command) < len(sub_file_list):
