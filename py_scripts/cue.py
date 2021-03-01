@@ -3,7 +3,21 @@ from os.path import isfile, join
 import keyboard
 import requests
 
-server_address = 'http://localhost:3000'
+server_address = ''
+
+
+def read_server_address():
+    global server_address
+    f = open("server_address.txt", "r")
+    server_address = f.read()
+    f.close()
+
+
+def write_server_address():
+    global server_address
+    f = open("server_address.txt", "w")
+    f.write(server_address)
+    f.close()
 
 
 def get_sub_file_list():
@@ -13,7 +27,7 @@ def get_sub_file_list():
 def print_file_names(all_sub_files):
     i = 0
     for file in all_sub_files:
-        print(i,": ",file)
+        print(i, ": ", file)
         i += 1
 
 
@@ -46,24 +60,28 @@ def play_subtitle(filename):
 
 def main():
     global server_address
+    read_server_address()
 
     sub_file_list = get_sub_file_list()
     while True:
         try:
             post_lyric('')
             print('\n\nPosting to server: "'+server_address+'"')
-            print('Choose sketch or write "q" to quit or "s" to change server address:')
+            print('Enter number to choose sketch or enter letter for command\n'
+                  '"q" to quit\n'
+                  '"s" to change server address\n')
             print_file_names(sub_file_list)
         except:
             print('\n\nCOULD NOT POST TO SERVER! Change to a working one using command "s"')
 
-        command = input("\nEnter command: ")
+        command = input("\nSketch/command: ")
 
         if command == 'q':
             break
 
         elif command == 's':
             server_address = input('Enter new server address:')
+            write_server_address()
             print('Server set to: "'+server_address+'"')
 
         elif command.isdecimal():
