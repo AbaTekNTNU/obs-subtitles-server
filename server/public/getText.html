@@ -2,70 +2,71 @@
 <html>
     <head>
         <title>OBS subtitles streaming</title>
+        <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            #sub-container {
+                display:flex;
+                justify-content:center;
+                align-items:flex-end;
+                width:100%;
+                height:100vh;
+            }
+            h1 {
+                text-shadow: 1px 1px 5px #000000;
+                color: white;
+                font-family: 'Roboto', Arial, sans-serif;
+                font-size: 60px;
+                text-align: center;
+            }
+        </style>s
+        <script>
+            function connect() {
+                getCurrent();
+                openSocket();
+            }
+
+            function getCurrent() {
+                const xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("GET", 'http://localhost:3000/', true);
+
+                xmlHttp.onload = () => {
+                    document.querySelector('#subtitles').textContent = xmlHttp.responseText;
+                }
+
+                xmlHttp.onerror = () => {
+                    console.log('Error');
+                }
+
+                xmlHttp.send();
+            }
+
+            function openSocket() {
+                const webSocket = new WebSocket('ws://localhost:8080');
+
+                webSocket.onopen = (event) => {
+                    getCurrent();
+                    console.log('connected');
+                };
+
+                webSocket.onmessage = (event) => {
+                    document.querySelector('#subtitles').textContent = event.data;
+                }
+
+                webSocket.onclose = (event) => {
+                    connect();
+                }
+            }
+
+            connect();
+        </script>
     </head>
     <body>
         <div id="sub-container">
             <h1 id="subtitles"></h1>
         </div>
     </body>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        #sub-container {
-            display:flex;
-            justify-content:center;
-            align-items:flex-end;
-            width:100%;
-            height:100vh;
-        }
-        h1 {
-            text-shadow: 1px 1px 5px #000000;
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 60px;
-            text-align: center;
-        }
-    </style>
-    <script>
-        function connect() {
-            getCurrent();
-            openSocket();
-        }
-
-        function getCurrent() {
-            const xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", 'http://localhost:3000/', true);
-
-            xmlHttp.onload = () => {
-                document.querySelector('#subtitles').textContent = xmlHttp.responseText;
-            }
-
-            xmlHttp.onerror = () => {
-                console.log('Error');
-            }
-
-            xmlHttp.send();
-        }
-
-        function openSocket() {
-            const webSocket = new WebSocket('ws://localhost:8080');
-
-            webSocket.onopen = (event) => {
-                getCurrent();
-                console.log('connected');
-            };
-
-            webSocket.onmessage = (event) => {
-                document.querySelector('#subtitles').textContent = event.data;
-            }
-
-            webSocket.onclose = (event) => {
-                connect();
-            }
-        }
-
-        connect();
-    </script>
 </html>
