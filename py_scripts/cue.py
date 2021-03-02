@@ -82,7 +82,7 @@ def main():
         except:
             print('\n\nCOULD NOT POST TO SERVER! Change to a working one using command "s"')
 
-        command = input("\nSketch/command: ")
+        command = input("\nSketch/command: ").strip()
 
         if command == 'q':
             break
