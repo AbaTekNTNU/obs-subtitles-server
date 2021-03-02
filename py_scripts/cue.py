@@ -21,11 +21,13 @@ def write_server_address():
 
 
 def get_sub_file_list():
-    return [f for f in listdir('subs') if isfile(join('subs', f))]
+    files = [f for f in listdir('subs') if isfile(join('subs', f))]
+    files.sort()
+    return files
 
 
 def print_file_names(all_sub_files):
-    i = 0
+    i = 1
     for file in all_sub_files:
         print(i, ": ", file)
         i += 1
@@ -85,8 +87,8 @@ def main():
             print('Server set to: "'+server_address+'"')
 
         elif command.isdecimal():
-            if int(command) < len(sub_file_list):
-                filename = sub_file_list[int(command)]
+            if int(command) <= len(sub_file_list):
+                filename = sub_file_list[int(command)-1]
                 play_subtitle(filename)
             else:
                 print('Sketch does not exist')
