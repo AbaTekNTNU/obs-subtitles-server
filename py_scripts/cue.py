@@ -43,17 +43,23 @@ def read_sub_file(filename):
 
 def post_lyric(lyric):
     x = requests.post(server_address, data={'text': lyric})
-    print(x.text)
+
+
+def clear_terminal():
+    print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 
 
 def play_subtitle(filename):
-    print('Playing', filename, "press 'space' to go to next lyric")
+    clear_terminal()
+    print('\n\nPlaying"', filename, '"press "space" to go to next lyric\n')
     lines = read_sub_file(filename)
 
     for line in lines:
-        print('Next lyric:',line)
+        print('\n\n\nUp next:', line)
         keyboard.wait('space')
         post_lyric(line)
+        clear_terminal()
+        print('', line)
 
     print('Sketch finished, "space" to clear lyric')
     keyboard.wait('space')
