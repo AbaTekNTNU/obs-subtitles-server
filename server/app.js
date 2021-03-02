@@ -1,5 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 8080 });
+
+let connections = [];
+
+wss.on('connection', function connection(ws) {
+    console.log('connected');
+    connections.push(ws);
+});
+
+updateText = (text) => {
+    for (const ws of connections) {
+        ws.send(text)
+    }
+}
 
 const app = express();
 const port = 3000;
@@ -22,6 +38,7 @@ app.post('/', (req, res) => {
     } else {
         currentText = req.body['text'];
         res.send('Updated!');
+        updateText(currentText);
     }
 });
 

@@ -29,9 +29,14 @@
         }
     </style>
     <script>
-        setInterval(() => {
+        function connect() {
+            getCurrent();
+            openSocket();
+        }
+
+        function getCurrent() {
             const xmlHttp = new XMLHttpRequest();
-            xmlHttp.open( "GET", 'http://localhost:3000/', true);
+            xmlHttp.open("GET", 'http://localhost:3000/', true);
 
             xmlHttp.onload = () => {
                 document.querySelector('#subtitles').textContent = xmlHttp.responseText;
@@ -42,6 +47,25 @@
             }
 
             xmlHttp.send();
-        }, 100);
+        }
+
+        function openSocket() {
+            const webSocket = new WebSocket('ws://localhost:8080');
+
+            webSocket.onopen = (event) => {
+                getCurrent();
+                console.log('connected');
+            };
+
+            webSocket.onmessage = (event) => {
+                document.querySelector('#subtitles').textContent = event.data;
+            }
+
+            webSocket.onclose = (event) => {
+                connect();
+            }
+        }
+
+        connect();
     </script>
 </html>
