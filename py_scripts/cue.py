@@ -51,7 +51,7 @@ def clear_terminal():
 
 def play_subtitle(filename):
     clear_terminal()
-    print('\n\nPlaying"', filename, '"press "space" to go to next lyric\n')
+    print('\n\nPlaying"', filename, '"press "space" to go to next lyric, "esc" to stop\n')
     lines = read_sub_file(filename)
 
     for line in lines:
