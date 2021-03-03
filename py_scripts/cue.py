@@ -56,10 +56,18 @@ def play_subtitle(filename):
 
     for line in lines:
         print('\n\n\nUp next:', line)
-        keyboard.wait('space')
-        post_lyric(line)
-        clear_terminal()
-        print('', line)
+        while True:
+            event = keyboard.read_event()
+            if event.event_type == keyboard.KEY_UP:
+                if event.name == 'space':
+                    post_lyric(line)
+                    clear_terminal()
+                    print(line)
+                    break
+                if event.name == 'esc':
+                    post_lyric('')
+                    return
+
 
     print('Sketch finished, "space" to clear lyric')
     keyboard.wait('space')
