@@ -7,23 +7,122 @@
             body {
                 margin: 0;
                 padding: 0;
+                background-color: black;
             }
-            #sub-container {
+
+            .subtitle-container {
                 display:flex;
                 justify-content:center;
                 align-items:flex-end;
                 width:100%;
                 height:100vh;
             }
-            h1 {
+
+            .subtitle {
+                position: absolute;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-sizing: border-box;
                 text-shadow: 1px 1px 6px #000000;
                 color: white;
                 font-family: 'Roboto', Arial, sans-serif;
                 font-size: 60px;
                 text-align: center;
             }
+
+            .subtitle:nth-child(3) {
+                top: 0;
+                left: 0;
+                right: 0;
+            }
+
+            .subtitle:nth-child(4) {
+                right: 0;
+                top: 0;
+                bottom: 0;
+                max-width: 50%;
+            }
+
+            .subtitle:nth-child(1) {
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+
+            .subtitle:nth-child(2) {
+                left: 0;
+                top: 0;
+                bottom: 0;
+                max-width: 50%;
+            }
         </style>
         <script>
+            const subColors =
+                [
+                    "#ffffff",
+                    "#ff0000",
+                    "#00ff00",
+                    "#0000ff",
+                    "#ffff00",
+                    "#00ffff",
+                    "#ff00ff",
+                    "#ff8000",
+                    "#ff0080",
+                    "#8000ff",
+                    "#0080ff",
+                    "#00ff80",
+                    "#80ff00",
+                    "#ff8000",
+                    "#ff0080",
+                ];
+
+            // Color supports following values:
+            // - number: index of the color in the subColors array
+            // - random: random color from the subColors array
+            // - string: any valid css color
+            function getColor(key) {
+                if (typeof key === 'number') {
+                    return subColors[key % subColors.length];
+                } else if (key === 'random') {
+                    return subColors[Math.floor(Math.random() * subColors.length)];
+                } else if (key) {
+                    return key;
+                }
+                return null;
+            }
+
+            // Currently only supports three levels of nesting
+            const jsonRegex = /\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}])*})*})*}/;
+
+            // Parses the options from the subtitle
+            // Example: { "color": "red" } Colored subtitle
+            function parseOpts(subtitle) {
+                const match = subtitle.match(jsonRegex);
+                if (match && match.length) {
+                    return JSON.parse(match[0]);
+                }
+                return {};
+            }
+
+            // Subtitles can be split by '::' to create multiple simultaneous subtitles which will be displayed in the order bottom, left, top, right
+            // A subtitle can contain a json object, which will be used to style the subtitle
+            // Example: { "color": "red" } Colored subtitle :: Non-colored subtitle on the left side :: { "color": "blue" } Colored subtitle on the top
+            function setSubtitles(subtitles) {
+                const subs = subtitles.split("::");
+                document.querySelectorAll('.subtitle').forEach((el, index) => {
+                    if (index < subs.length) {
+                        const opts = parseOpts(subs[index]);
+                        let sub = subs[index].replace(jsonRegex, '').trim();
+
+                        el.style.color = getColor(opts.color);
+                        el.textContent = sub;
+                    } else {
+                        el.textContent = '';
+                    }
+                });
+            }
+
             function connect() {
                 getCurrent();
                 openSocket();
@@ -34,7 +133,7 @@
                 xmlHttp.open("GET", 'http://localhost:3000/', true);
 
                 xmlHttp.onload = () => {
-                    document.querySelector('#subtitles').textContent = xmlHttp.responseText;
+                    setSubtitles(xmlHttp.responseText);
                 }
 
                 xmlHttp.onerror = () => {
@@ -53,7 +152,7 @@
                 };
 
                 webSocket.onmessage = (event) => {
-                    document.querySelector('#subtitles').textContent = event.data;
+                    setSubtitles(event.data);
                 }
 
                 webSocket.onclose = (event) => {
@@ -65,8 +164,11 @@
         </script>
     </head>
     <body>
-        <div id="sub-container">
-            <h1 id="subtitles"></h1>
+        <div class="subtitle-container" >
+            <h1 class="subtitle"></h1>
+            <h1 class="subtitle"></h1>
+            <h1 class="subtitle"></h1>
+            <h1 class="subtitle"></h1>
         </div>
     </body>
 </html>
