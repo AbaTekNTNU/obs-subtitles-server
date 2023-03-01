@@ -61,13 +61,27 @@ fn write_lines(
 ) {
     write!(stdout, "{}", termion::clear::All);
 
+    if line_number > 1 {
+        match strings.get(line_number - 2) {
+            Some(line) => {
+                write!(stdout, "{}", termion::cursor::Goto(1, 1));
+                write!(stdout, "{}", termion::color::Fg(termion::color::LightBlack));
+                write!(stdout, "Previous:");
+                print_line_left_aligned(stdout, line, 1);
+            }
+            None => {
+                write!(stdout, "No previous line");
+            }
+        }
+    }
+
     if line_number > 0 {
         match strings.get(line_number - 1) {
             Some(line) => {
-                write!(stdout, "{}", termion::cursor::Goto(1, 1));
+                write!(stdout, "{}", termion::cursor::Goto(1, 2));
                 write!(stdout, "{}", termion::color::Fg(termion::color::Blue));
                 write!(stdout, "Current:");
-                print_line_left_aligned(stdout, line, 1);
+                print_line_left_aligned(stdout, line, 2);
             }
             None => {
                 write!(stdout, "No previous line\n");
@@ -76,26 +90,26 @@ fn write_lines(
     }
 
     write!(stdout, "{}", termion::color::Fg(termion::color::Reset));
-    write!(stdout, "{}", termion::cursor::Goto(1, 2));
+    write!(stdout, "{}", termion::cursor::Goto(1, 3));
     write!(stdout, "Next:");
 
     if line_number < strings.len() {
         match strings.get(line_number) {
             Some(line) => {
-                print_line_left_aligned(stdout, line, 2);
+                print_line_left_aligned(stdout, line, 3);
             }
             None => {
                 write!(stdout, "No more lines\n");
             }
         }
     }
-    write!(stdout, "{}", termion::cursor::Goto(1, 3));
+    write!(stdout, "{}", termion::cursor::Goto(1, 4));
     write!(stdout, "Next lines:");
     //move cursor to next line, 0 chars from left
     //show next 5 lines aligned to left side
     for i in 0..10 {
         match strings.get(line_number + i) {
-            Some(line) => print_line_left_aligned(stdout, line, (i + 2).try_into().unwrap()),
+            Some(line) => print_line_left_aligned(stdout, line, (i + 3).try_into().unwrap()),
             None => {
                 break;
             }
