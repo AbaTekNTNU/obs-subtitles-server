@@ -150,22 +150,6 @@ async fn main() -> Result<(), Error> {
     let mut stdout = stdout.into_raw_mode().unwrap();
 
     write_lines(&mut stdout, &strings, line_number);
-    /*match strings.get(line_number) {
-        Some(line) => match send_post_request("http://localhost:80", line).await {
-            Ok(_) => {
-                line_number += 1;
-                write_lines(&mut stdout, &strings, line_number);
-            }
-            Err(e) => {
-                write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
-                write!(stdout, "Could not send request: {}", e).unwrap();
-            }
-        },
-        None => {
-            write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
-            write!(stdout, "No more lines").unwrap();
-        }
-    }*/
 
     loop {
         let stdin = std::io::stdin();
@@ -176,7 +160,7 @@ async fn main() -> Result<(), Error> {
                     return Ok(());
                 }
                 Event::Key(Key::Char(' ')) => {
-                    if line_number < strings.len() - 1 {
+                    if line_number < strings.len() {
                         write_lines(&mut stdout, &strings, line_number);
                         match strings.get(line_number) {
                             Some(line) => {
