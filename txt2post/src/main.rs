@@ -122,6 +122,7 @@ fn read_subtitles() -> Vec<String> {
         let entry = entry.unwrap();
         let path = entry.path();
         files.push(path);
+        files.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
     }
 
     write!(stdout(), "{}", termion::clear::All);
