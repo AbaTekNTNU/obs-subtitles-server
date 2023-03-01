@@ -144,7 +144,7 @@ fn read_subtitles() -> Vec<String> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let strings = read_subtitles();
+    let mut strings = read_subtitles();
     let mut line_number = 0;
     let stdout = stdout();
     let mut stdout = stdout.into_raw_mode().unwrap();
@@ -227,7 +227,7 @@ async fn main() -> Result<(), Error> {
                     }
                     write!(stdout, "{}", termion::cursor::Show).unwrap();
                     stdout.suspend_raw_mode().unwrap();
-                    let strings = read_subtitles();
+                    strings = read_subtitles();
                     stdout.activate_raw_mode().unwrap();
 
                     line_number = 0;
