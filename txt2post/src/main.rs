@@ -93,7 +93,7 @@ fn write_lines(
     write!(stdout, "Next lines:");
     //move cursor to next line, 0 chars from left
     //show next 5 lines aligned to left side
-    for i in 0..4 {
+    for i in 0..10 {
         match strings.get(line_number + i) {
             Some(line) => print_line_left_aligned(stdout, line, (i + 3).try_into().unwrap()),
             None => {
