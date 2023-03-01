@@ -134,7 +134,7 @@ fn read_subtitles() -> Vec<String> {
         .unwrap();
         println!("{}: {}", i, file.display());
     }
-    write!(stdout(), "{}", termion::cursor::Goto(1, 10)).unwrap();
+    write!(stdout(), "{}", termion::cursor::Goto(1, 20)).unwrap();
     write!(stdout(), "Choose a subtitle or press q to quit\n").unwrap();
 
     let strings = choose_file(files);
@@ -176,7 +176,6 @@ async fn main() -> Result<(), Error> {
                 }
                 Event::Key(Key::Char(' ')) => {
                     if line_number < strings.len() - 1 {
-                        line_number += 1;
                         write_lines(&mut stdout, &strings, line_number);
                         match strings.get(line_number) {
                             Some(line) => {
@@ -227,21 +226,41 @@ async fn main() -> Result<(), Error> {
                     line_number = 0;
                     write_lines(&mut stdout, &strings, line_number);
                     match strings.get(line_number) {
-                        Some(line) => {
-                            match send_post_request("http://localhost:80", line).await {
-                                Ok(_) => {
-                                    line_number += 1;
-                                    write_lines(&mut stdout, &strings, line_number);
-                                }
-                                Err(e) => {
-                                    write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
-                                    write!(stdout, "Could not send request: {}", e).unwrap();
-                                }
+                        Some(line) => match send_post_request("http://localhost:80", line).await {
+                            Ok(_) => {
+                                line_number += 1;
+                                write_lines(&mut stdout, &strings, line_number);
                             }
-                        }
+                            Err(e) => {
+                                write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
+                                write!(stdout, "Could not send request: {}", e).unwrap();
+                            }
+                        },
                         None => {
                             write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
                             write!(stdout, "No more lines").unwrap();
+                        }
+                    }
+                }
+                Event::Key(Key::Char('b')) => {
+                    if line_number > 0 {
+                        line_number -= 1;
+                        match strings.get(line_number) {
+                            Some(line) => {
+                                match send_post_request("http://localhost:80", line).await {
+                                    Ok(_) => {
+                                        write_lines(&mut stdout, &strings, line_number);
+                                    }
+                                    Err(e) => {
+                                        write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
+                                        write!(stdout, "Could not send request: {}", e).unwrap();
+                                    }
+                                }
+                            }
+                            None => {
+                                write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
+                                write!(stdout, "No more lines").unwrap();
+                            }
                         }
                     }
                 }
