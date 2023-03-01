@@ -150,7 +150,7 @@ async fn main() -> Result<(), Error> {
 
     write_lines(&mut stdout, &strings, line_number);
     match strings.get(line_number) {
-        Some(line) => match send_post_request("http://localhost:3000", line).await {
+        Some(line) => match send_post_request("http://localhost:80", line).await {
             Ok(_) => {
                 line_number += 1;
                 write_lines(&mut stdout, &strings, line_number);
@@ -180,7 +180,7 @@ async fn main() -> Result<(), Error> {
                         write_lines(&mut stdout, &strings, line_number);
                         match strings.get(line_number) {
                             Some(line) => {
-                                match send_post_request("http://localhost:3000", line).await {
+                                match send_post_request("http://localhost:80", line).await {
                                     Ok(_) => {
                                         line_number += 1;
                                         write!(
@@ -228,7 +228,7 @@ async fn main() -> Result<(), Error> {
                     write_lines(&mut stdout, &strings, line_number);
                     match strings.get(line_number) {
                         Some(line) => {
-                            match send_post_request("http://localhost:3000", line).await {
+                            match send_post_request("http://localhost:80", line).await {
                                 Ok(_) => {
                                     line_number += 1;
                                     write_lines(&mut stdout, &strings, line_number);
