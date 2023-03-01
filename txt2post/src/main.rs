@@ -17,13 +17,16 @@ fn load_txt_file_safe(path: &str) -> Result<String, std::io::Error> {
 
 async fn send_post_request(url: &str, string: &str) -> Result<(), Error> {
     let body = format!(r#"{{"text": "{}"}}"#, string);
-    let response = reqwest::Client::new()
+    match reqwest::Client::new()
         .post(url)
         .header("Content-Type", "application/json")
         .body(body)
         .send()
-        .await?;
-    Ok(())
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e),
+    }
 }
 fn choose_file(files: Vec<std::path::PathBuf>) -> Vec<String> {
     let mut input = String::new();
@@ -61,6 +64,7 @@ fn write_lines(
     if line_number > 0 {
         match strings.get(line_number - 1) {
             Some(line) => {
+                write!(stdout, "{}", termion::cursor::Goto(1, 1));
                 write!(stdout, "Previous line:");
                 print_line_left_aligned(stdout, line, 1);
             }
@@ -96,7 +100,10 @@ fn write_lines(
         }
     }
     write!(stdout, "{}", termion::cursor::Goto(1, 10));
-    write!(stdout, "Press space to send next line or q to quit");
+    write!(
+        stdout,
+        "Press space to send next line, m to go to menu or q to quit"
+    );
 }
 
 fn print_line_left_aligned(
@@ -127,9 +134,8 @@ fn read_subtitles() -> Vec<String> {
         .unwrap();
         println!("{}: {}", i, file.display());
     }
-    //Choose a subtitle or press q to quit
     write!(stdout(), "{}", termion::cursor::Goto(1, 10)).unwrap();
-    write!(stdout(), "Choose a subtitle or press q to quit").unwrap();
+    write!(stdout(), "Choose a subtitle or press q to quit\n").unwrap();
 
     let strings = choose_file(files);
     strings
@@ -138,50 +144,110 @@ fn read_subtitles() -> Vec<String> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let strings = read_subtitles();
-
+    let mut line_number = 0;
     let stdout = stdout();
     let mut stdout = stdout.into_raw_mode().unwrap();
 
-    write!(stdout, "{}", termion::cursor::Hide);
-    let mut line_number = 0;
     write_lines(&mut stdout, &strings, line_number);
-    send_post_request("http://localhost:3000", strings.get(line_number).unwrap()).await?;
-
-    loop {
-        write!(stdout, "{}", termion::cursor::Goto(1, 1));
-        if line_number + 1 == strings.len() {
-            let strings = read_subtitles();
-            write!(stdout, "{}", termion::cursor::Hide);
-            line_number = 0;
-            write_lines(&mut stdout, &strings, line_number);
-            send_post_request("http://localhost:3000", strings.get(line_number).unwrap()).await?;
-        }
-
-        match std::io::stdin().events().next().unwrap() {
-            Ok(Event::Key(Key::Char(' '))) => {
+    match strings.get(line_number) {
+        Some(line) => match send_post_request("http://localhost:3000", line).await {
+            Ok(_) => {
                 line_number += 1;
-                let string = strings.get(line_number).unwrap();
-                send_post_request("http://localhost:3000", string).await?;
                 write_lines(&mut stdout, &strings, line_number);
             }
-            Ok(Event::Key(Key::Left)) => {
-                if line_number > 0 {
-                    line_number -= 1;
-                } else {
-                    line_number = 0;
-                }
-                let string = strings.get(line_number).unwrap();
-                send_post_request("http://localhost:3000", string).await?;
-                write_lines(&mut stdout, &strings, line_number);
+            Err(e) => {
+                write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
+                write!(stdout, "Could not send request: {}", e).unwrap();
             }
-            Ok(Event::Key(Key::Char('q'))) => {
-                write!(stdout, "{}", termion::cursor::Show);
-                //disable_raw_mode().unwrap();
-                break;
-            }
-            _ => {}
+        },
+        None => {
+            write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
+            write!(stdout, "No more lines").unwrap();
         }
     }
 
+    loop {
+        let stdin = std::io::stdin();
+        for c in stdin.events() {
+            match c.unwrap() {
+                Event::Key(Key::Char('q')) => {
+                    write!(stdout, "{}", termion::cursor::Show).unwrap();
+                    return Ok(());
+                }
+                Event::Key(Key::Char(' ')) => {
+                    if line_number < strings.len() - 1 {
+                        line_number += 1;
+                        write_lines(&mut stdout, &strings, line_number);
+                        match strings.get(line_number) {
+                            Some(line) => {
+                                match send_post_request("http://localhost:3000", line).await {
+                                    Ok(_) => {
+                                        line_number += 1;
+                                        write!(
+                                            stdout,
+                                            "{}",
+                                            termion::color::Fg(termion::color::White)
+                                        )
+                                        .unwrap();
+                                        write_lines(&mut stdout, &strings, line_number);
+                                    }
+                                    Err(e) => {
+                                        write!(
+                                            stdout,
+                                            "{}",
+                                            termion::color::Fg(termion::color::Red)
+                                        )
+                                        .unwrap();
+                                        write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
+                                        write!(stdout, "Could not send request: {}", e).unwrap();
+                                    }
+                                }
+                            }
+                            None => {
+                                write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
+                                write!(stdout, "No more lines").unwrap();
+                            }
+                        }
+                    } else {
+                        // clear screen
+                        write!(stdout, "{}", termion::clear::All).unwrap();
+                        write!(stdout, "No more lines to send").unwrap();
+                    }
+                }
+                // on m, go to menu
+                Event::Key(Key::Char('m')) => {
+                    write!(stdout, "{}", termion::clear::All).unwrap();
+                    write!(stdout, "{}", termion::cursor::Goto(1, 1)).unwrap();
+                    write!(stdout, "Going back to menu").unwrap();
+                    //deactivate raw mode
+                    write!(stdout, "{}", termion::cursor::Show).unwrap();
+                    stdout.suspend_raw_mode().unwrap();
+                    let strings = read_subtitles();
+                    stdout.activate_raw_mode().unwrap();
+                    line_number = 0;
+                    write_lines(&mut stdout, &strings, line_number);
+                    match strings.get(line_number) {
+                        Some(line) => {
+                            match send_post_request("http://localhost:3000", line).await {
+                                Ok(_) => {
+                                    line_number += 1;
+                                    write_lines(&mut stdout, &strings, line_number);
+                                }
+                                Err(e) => {
+                                    write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
+                                    write!(stdout, "Could not send request: {}", e).unwrap();
+                                }
+                            }
+                        }
+                        None => {
+                            write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
+                            write!(stdout, "No more lines").unwrap();
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
     Ok(())
 }
