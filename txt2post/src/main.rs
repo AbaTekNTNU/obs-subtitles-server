@@ -65,7 +65,8 @@ fn write_lines(
         match strings.get(line_number - 1) {
             Some(line) => {
                 write!(stdout, "{}", termion::cursor::Goto(1, 1));
-                write!(stdout, "Previous line:");
+                write!(stdout, "{}", termion::color::Fg(termion::color::Blue));
+                write!(stdout, "Current:");
                 print_line_left_aligned(stdout, line, 1);
             }
             None => {
@@ -74,8 +75,9 @@ fn write_lines(
         }
     }
 
+    write!(stdout, "{}", termion::color::Fg(termion::color::Reset));
     write!(stdout, "{}", termion::cursor::Goto(1, 2));
-    write!(stdout, "Sent:");
+    write!(stdout, "Next:");
 
     if line_number < strings.len() {
         match strings.get(line_number) {
@@ -87,11 +89,11 @@ fn write_lines(
             }
         }
     }
-    write!(stdout, "{}", termion::cursor::Goto(1, 4));
+    write!(stdout, "{}", termion::cursor::Goto(1, 3));
     write!(stdout, "Next lines:");
     //move cursor to next line, 0 chars from left
     //show next 5 lines aligned to left side
-    for i in 1..5 {
+    for i in 0..4 {
         match strings.get(line_number + i) {
             Some(line) => print_line_left_aligned(stdout, line, (i + 3).try_into().unwrap()),
             None => {
@@ -130,12 +132,12 @@ fn read_subtitles() -> Vec<String> {
         write!(
             stdout(),
             "{}",
-            termion::cursor::Goto(1, (i + 1).try_into().unwrap()),
+            termion::cursor::Goto(1, (i).try_into().unwrap()),
         )
         .unwrap();
         println!("{}: {}", i, file.display());
     }
-    write!(stdout(), "{}", termion::cursor::Goto(1, 20)).unwrap();
+    write!(stdout(), "{}", termion::cursor::Goto(1, 15)).unwrap();
     write!(stdout(), "Choose a subtitle or press q to quit\n").unwrap();
 
     let strings = choose_file(files);
