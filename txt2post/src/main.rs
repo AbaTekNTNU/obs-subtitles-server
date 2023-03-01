@@ -118,7 +118,7 @@ fn print_line_left_aligned(
 
 fn read_subtitles() -> Vec<String> {
     let mut files = Vec::new();
-    for entry in std::fs::read_dir("subtitles").unwrap() {
+    for entry in std::fs::read_dir("../py_scripts/subs").unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
         files.push(path);
@@ -156,6 +156,7 @@ async fn main() -> Result<(), Error> {
         for c in stdin.events() {
             match c.unwrap() {
                 Event::Key(Key::Char('q')) => {
+                    write!(stdout, "{}", termion::clear::All).unwrap();
                     write!(stdout, "{}", termion::cursor::Show).unwrap();
                     return Ok(());
                 }
