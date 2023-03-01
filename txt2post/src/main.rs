@@ -95,7 +95,7 @@ fn write_lines(
     //show next 5 lines aligned to left side
     for i in 0..10 {
         match strings.get(line_number + i) {
-            Some(line) => print_line_left_aligned(stdout, line, (i + 3).try_into().unwrap()),
+            Some(line) => print_line_left_aligned(stdout, line, (i + 2).try_into().unwrap()),
             None => {
                 break;
             }
