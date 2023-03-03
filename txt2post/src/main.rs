@@ -164,6 +164,7 @@ async fn main() -> Result<(), Error> {
     let mut line_number = 0;
     let stdout = stdout();
     let mut stdout = stdout.into_raw_mode().unwrap();
+    let mut disable_send = false;
 
     write_lines(&mut stdout, &strings, line_number);
 
@@ -181,25 +182,24 @@ async fn main() -> Result<(), Error> {
                         match strings.get(line_number) {
                             Some(line) => {
                                 line_number += 1;
-                                match send_post_request("http://localhost:80", line).await {
-                                    Ok(_) => {
-                                        write!(
-                                            stdout,
-                                            "{}",
-                                            termion::color::Fg(termion::color::White)
-                                        )
-                                        .unwrap();
-                                        write_lines(&mut stdout, &strings, line_number);
-                                    }
-                                    Err(e) => {
-                                        write!(
-                                            stdout,
-                                            "{}",
-                                            termion::color::Fg(termion::color::Red)
-                                        )
-                                        .unwrap();
-                                        write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
-                                        write!(stdout, "Could not send request: {}", e).unwrap();
+                                write!(stdout, "{}", termion::color::Fg(termion::color::White))
+                                    .unwrap();
+                                write_lines(&mut stdout, &strings, line_number);
+                                if !disable_send {
+                                    match send_post_request("http://localhost:80", line).await {
+                                        Ok(_) => {}
+                                        Err(e) => {
+                                            write!(
+                                                stdout,
+                                                "{}",
+                                                termion::color::Fg(termion::color::Red)
+                                            )
+                                            .unwrap();
+                                            write!(stdout, "{}", termion::cursor::Goto(1, 20))
+                                                .unwrap();
+                                            write!(stdout, "Could not send request: {}", e)
+                                                .unwrap();
+                                        }
                                     }
                                 }
                             }
@@ -259,21 +259,23 @@ async fn main() -> Result<(), Error> {
                         match strings.get(line_number) {
                             Some(line) => {
                                 line_number -= 1;
-                                match send_post_request(
-                                    "http://localhost:80",
-                                    strings.get(line_number - 1).unwrap(),
-                                )
-                                .await
-                                {
-                                    Ok(_) => {
-                                        write_lines(&mut stdout, &strings, line_number);
-                                    }
-                                    Err(e) => {
-                                        write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
-                                        write!(stdout, "Could not send request: {}", e).unwrap();
+                                write_lines(&mut stdout, &strings, line_number);
+                                if !disable_send {
+                                    match send_post_request(
+                                        "http://localhost:80",
+                                        strings.get(line_number - 1).unwrap(),
+                                    )
+                                    .await
+                                    {
+                                        Ok(_) => {}
+                                        Err(e) => {
+                                            write!(stdout, "{}", termion::cursor::Goto(1, 20))
+                                                .unwrap();
+                                            write!(stdout, "Could not send request: {}", e)
+                                                .unwrap();
+                                        }
                                     }
                                 }
-                                write_lines(&mut stdout, &strings, line_number);
                             }
                             None => {
                                 write!(stdout, "{}", termion::cursor::Goto(1, 2)).unwrap();
@@ -296,6 +298,15 @@ async fn main() -> Result<(), Error> {
                     write!(stdout, "{}", termion::clear::All).unwrap();
                     write!(stdout, "{}", termion::cursor::Goto(1, 1)).unwrap();
                     write!(stdout, "Press q to quit, space to continue").unwrap();
+                }
+                Event::Key(Key::Char('v')) => {
+                    disable_send = !disable_send;
+                    write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
+                    if disable_send {
+                        write!(stdout, "Disabled sending").unwrap();
+                    } else {
+                        write!(stdout, "Enabled sending").unwrap();
+                    }
                 }
                 _ => {}
             }
