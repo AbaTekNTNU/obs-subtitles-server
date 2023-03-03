@@ -118,7 +118,7 @@ fn write_lines(
     write!(stdout, "{}", termion::cursor::Goto(1, 10));
     write!(
         stdout,
-        "Press space to send next line, m to go to menu or q to quit"
+        "Press space to send next line, m to go to menu, b to toggle sending or q to quit"
     );
 }
 
@@ -304,8 +304,12 @@ async fn main() -> Result<(), Error> {
                     write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
                     if disable_send {
                         write!(stdout, "Disabled sending").unwrap();
+                        send_post_request("http://localhost:80", "").await.unwrap();
                     } else {
                         write!(stdout, "Enabled sending").unwrap();
+                        send_post_request("http://localhost:80", strings.get(line_number).unwrap())
+                            .await
+                            .unwrap();
                     }
                 }
                 _ => {}
