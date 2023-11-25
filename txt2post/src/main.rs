@@ -58,8 +58,16 @@ fn write_lines(
     stdout: &mut RawTerminal<std::io::Stdout>,
     strings: &Vec<String>,
     line_number: usize,
+    disable_send: bool,
 ) {
     write!(stdout, "{}", termion::clear::All);
+
+    write!(stdout, "{}", termion::cursor::Goto(1, 17));
+    if (disable_send) {
+        write!(stdout, "{}Output disabled", termion::color::Fg(termion::color::Red));
+    } else {
+        write!(stdout, "{}Output enabled", termion::color::Fg(termion::color::Green));
+    }
 
     if line_number > 1 {
         match strings.get(line_number - 2) {
@@ -166,7 +174,7 @@ async fn main() -> Result<(), Error> {
     let mut stdout = stdout.into_raw_mode().unwrap();
     let mut disable_send = false;
 
-    write_lines(&mut stdout, &strings, line_number);
+    write_lines(&mut stdout, &strings, line_number, disable_send);
 
     loop {
         let stdin = std::io::stdin();
@@ -184,7 +192,7 @@ async fn main() -> Result<(), Error> {
                                 line_number += 1;
                                 write!(stdout, "{}", termion::color::Fg(termion::color::White))
                                     .unwrap();
-                                write_lines(&mut stdout, &strings, line_number);
+                                write_lines(&mut stdout, &strings, line_number, disable_send);
                                 if !disable_send {
                                     match send_post_request("http://localhost:80", line).await {
                                         Ok(_) => {}
@@ -245,7 +253,7 @@ async fn main() -> Result<(), Error> {
                     stdout.activate_raw_mode().unwrap();
 
                     line_number = 0;
-                    write_lines(&mut stdout, &strings, line_number);
+                    write_lines(&mut stdout, &strings, line_number, disable_send);
                     match strings.get(line_number) {
                         Some(line) => {}
                         None => {
@@ -259,7 +267,7 @@ async fn main() -> Result<(), Error> {
                         match strings.get(line_number) {
                             Some(line) => {
                                 line_number -= 1;
-                                write_lines(&mut stdout, &strings, line_number);
+                                write_lines(&mut stdout, &strings, line_number, disable_send);
                                 if !disable_send {
                                     match send_post_request(
                                         "http://localhost:80",
@@ -307,10 +315,11 @@ async fn main() -> Result<(), Error> {
                         send_post_request("http://localhost:80", "").await.unwrap();
                     } else {
                         write!(stdout, "Enabled sending").unwrap();
-                        send_post_request("http://localhost:80", strings.get(line_number).unwrap())
+                        send_post_request("http://localhost:80", strings.get(line_number - 1).unwrap())
                             .await
                             .unwrap();
                     }
+                    write_lines(&mut stdout, &strings, line_number, disable_send);
                 }
                 _ => {}
             }

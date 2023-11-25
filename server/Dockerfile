@@ -1,8 +1,13 @@
-FROM node:15
+FROM node:18
 
 WORKDIR /app
+
+COPY package.json /app
+COPY yarn.lock /app
+RUN yarn
+
 COPY . /app
 
-RUN yarn
+EXPOSE 3000
 
 CMD ["node", "app.js"]
