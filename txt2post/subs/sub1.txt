@@ -1,0 +1,6 @@
+Linje1
+Linje2
+Linje3
+Flere\nlinjer?
+Tre\nlinje lang\nundertekst
+En::To::Tre::Fire

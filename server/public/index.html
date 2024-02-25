@@ -133,7 +133,7 @@
 
             function getCurrent() {
                 const xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("GET", 'http://192.168.1.143/', true);
+                xmlHttp.open("GET", 'http://192.168.1.29:3000/', true);
 
                 xmlHttp.onload = () => {
                     setSubtitles(xmlHttp.responseText);
@@ -147,7 +147,7 @@
             }
 
             function openSocket() {
-                const webSocket = new WebSocket('ws://192.168.1.143:8080');
+                const webSocket = new WebSocket('ws://192.168.1.29:8080');
 
                 webSocket.onopen = (event) => {
                     getCurrent();
