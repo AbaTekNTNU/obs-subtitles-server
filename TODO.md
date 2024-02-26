@@ -1,6 +1,6 @@
 ### TODO
 
-- add automatic IP address from server
+- rewrite terminal app in javascript
 - add refresh support to txt poster
 - add multiline support
 - add overview of html pages when viewing root

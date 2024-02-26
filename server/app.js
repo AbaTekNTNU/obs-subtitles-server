@@ -1,9 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const WebSocket = require("ws");
+const cue = require("./cue");
+
+const USE_API = false;
+
+let currentText = "";
 
 const wss = new WebSocket.Server({ port: 8080 });
-
 let connections = [];
 
 wss.on("connection", function connection(ws) {
@@ -11,7 +15,8 @@ wss.on("connection", function connection(ws) {
   connections.push(ws);
 });
 
-updateText = (text) => {
+const updateText = (text) => {
+  currentText = text;
   for (const ws of connections) {
     ws.send(text);
   }
@@ -20,29 +25,37 @@ updateText = (text) => {
 const app = express();
 const port = 3000;
 
-let currentText = "";
-
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
 app.get("/", (req, res) => {
+  res.redirect("/index.html");
+});
+
+app.get("/current", (req, res) => {
   res.send(currentText);
 });
 
 app.use(express.static("public"));
 
-app.post("/", (req, res) => {
-  if (req.body["text"] !== "" && !req.body["text"]) {
-    res.status(400);
-    res.send("No text!");
-  } else {
-    currentText = req.body["text"];
-    res.send("Updated!");
-    console.log(`Got text from ${req.ip}: ${currentText}`);
-    updateText(currentText);
-  }
-});
+if (USE_API) {
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(bodyParser.json());
 
-app.listen(port, "0.0.0.0", () => {
+  app.post("/", (req, res) => {
+    if (req.body["text"] !== "" && !req.body["text"]) {
+      res.status(400);
+      res.send("No text!");
+    } else {
+      currentText = req.body["text"];
+      res.send("Updated!");
+      console.log(`Got text from ${req.ip}: ${currentText}`);
+      updateText(currentText);
+    }
+  });
+}
+
+app.listen(port, () => {
   console.log(`Subtitle server listening on port ${port}`);
 });
+
+if (!USE_API) {
+  cue.start(updateText);
+}

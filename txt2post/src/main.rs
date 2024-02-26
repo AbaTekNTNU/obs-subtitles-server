@@ -15,10 +15,10 @@ fn load_txt_file_safe(path: &str) -> Result<String, std::io::Error> {
     Ok(contents)
 }
 
-async fn send_post_request(url: &str, string: &str) -> Result<(), Error> {
+async fn send_post_request(string: &str) -> Result<(), Error> {
     let body = format!(r#"{{"text": "{}"}}"#, string);
     match reqwest::Client::new()
-        .post(url)
+        .post("http://localhost:3000")
         .header("Content-Type", "application/json")
         .body(body)
         .send()
@@ -194,7 +194,7 @@ async fn main() -> Result<(), Error> {
                                     .unwrap();
                                 write_lines(&mut stdout, &strings, line_number, disable_send);
                                 if !disable_send {
-                                    match send_post_request("http://localhost:3000", line).await {
+                                    match send_post_request(line).await {
                                         Ok(_) => {}
                                         Err(e) => {
                                             write!(
@@ -217,7 +217,7 @@ async fn main() -> Result<(), Error> {
                             }
                         }
                     } else {
-                        match send_post_request("http://localhost:3000", "").await {
+                        match send_post_request("").await {
                             Ok(_) => {
                                 write!(stdout, "{}", termion::clear::All).unwrap();
                                 write!(stdout, "{}", termion::cursor::Goto(1, 1)).unwrap();
@@ -236,7 +236,7 @@ async fn main() -> Result<(), Error> {
                     write!(stdout, "{}", termion::clear::All).unwrap();
                     write!(stdout, "{}", termion::cursor::Goto(1, 1)).unwrap();
                     write!(stdout, "Going back to menu").unwrap();
-                    match send_post_request("http://localhost:3000", "").await {
+                    match send_post_request("").await {
                         Ok(_) => {
                             write!(stdout, "{}", termion::clear::All).unwrap();
                             write!(stdout, "{}", termion::cursor::Goto(1, 1)).unwrap();
@@ -269,10 +269,7 @@ async fn main() -> Result<(), Error> {
                                 line_number -= 1;
                                 write_lines(&mut stdout, &strings, line_number, disable_send);
                                 if !disable_send {
-                                    match send_post_request(
-                                        "http://localhost:3000",
-                                        strings.get(line_number - 1).unwrap(),
-                                    )
+                                    match send_post_request(strings.get(line_number - 1).unwrap())
                                     .await
                                     {
                                         Ok(_) => {}
@@ -293,7 +290,7 @@ async fn main() -> Result<(), Error> {
                     }
                 }
                 Event::Key(Key::Char('c')) => {
-                    match send_post_request("http://localhost:3000", "").await {
+                    match send_post_request("").await {
                         Ok(_) => {
                             write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
                             write!(stdout, "Cleared screen").unwrap();
@@ -312,10 +309,10 @@ async fn main() -> Result<(), Error> {
                     write!(stdout, "{}", termion::cursor::Goto(1, 20)).unwrap();
                     if disable_send {
                         write!(stdout, "Disabled sending").unwrap();
-                        send_post_request("http://localhost:3000", "").await.unwrap();
+                        send_post_request("").await.unwrap();
                     } else {
                         write!(stdout, "Enabled sending").unwrap();
-                        send_post_request("http://localhost:3000", strings.get(line_number - 1).unwrap())
+                        send_post_request(strings.get(line_number - 1).unwrap())
                             .await
                             .unwrap();
                     }
