@@ -30,7 +30,6 @@ function getLines(file) {
   return lines;
 }
 
-//const getInput()
 async function runSelector(lines, updateText) {
   let i = 0;
   let disableSend = false;
@@ -52,14 +51,14 @@ async function runSelector(lines, updateText) {
       // proceed
       i = Math.min(i + 1, lines.length - 1);
       if (!disableSend) updateText(lines[i]);
-      drawLines(lines, i);
+      drawLines(lines, i, disableSend);
     }
 
     if (name == "b") {
       // back
       i = Math.max(i - 1, 0);
       if (!disableSend) updateText(lines[i]);
-      drawLines(lines, i);
+      drawLines(lines, i, disableSend);
     }
 
     if (name == "c") {
@@ -73,9 +72,11 @@ async function runSelector(lines, updateText) {
       disableSend = !disableSend;
       if (disableSend) {
         updateText("");
+        drawLines(lines, i, disableSend);
         console.log("\nDisabled send");
       } else {
         updateText(lines[i]);
+        drawLines(lines, i, disableSend);
         console.log("\nEnabled send");
       }
     }
@@ -87,7 +88,7 @@ async function runSelector(lines, updateText) {
   });
 }
 
-function drawLines(lines, index) {
+function drawLines(lines, index, disableSend) {
   const height = term.height - 2;
   const middle = Math.floor(height / 2);
   const paddedLines = [
@@ -103,11 +104,12 @@ function drawLines(lines, index) {
   term.clear();
   term.table(paddedLines, {
     hasBorder: false,
-    textAttr: { bgColor: "default" },
+    textAttr: { bgColor: "default", color: disableSend ? "red" : "default" },
     width: term.width,
     fit: true,
   });
 }
+
 /* Pseudocode:
 lines = readsubs
 linenumber = 0
