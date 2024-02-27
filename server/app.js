@@ -1,9 +1,10 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const WebSocket = require("ws");
-const cue = require("./cue");
+import { default as json, default as urlencoded } from "body-parser";
+import express from "express";
+import WebSocket from "ws";
+import { start } from "./cue.js";
 
 const USE_API = false;
+const SUBS_DIR = "./subs";
 
 let currentText = "";
 
@@ -36,8 +37,8 @@ app.get("/current", (req, res) => {
 app.use(express.static("public"));
 
 if (USE_API) {
-  app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(bodyParser.json());
+  app.use(urlencoded({ extended: false }));
+  app.use(json());
 
   app.post("/", (req, res) => {
     if (req.body["text"] !== "" && !req.body["text"]) {
@@ -50,12 +51,10 @@ if (USE_API) {
       updateText(currentText);
     }
   });
+} else {
+  start(updateText, SUBS_DIR);
 }
 
 app.listen(port, () => {
   console.log(`Subtitle server listening on port ${port}`);
 });
-
-if (!USE_API) {
-  cue.start(updateText);
-}
