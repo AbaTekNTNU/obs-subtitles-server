@@ -17,6 +17,9 @@ wss.on("connection", function connection(ws) {
 });
 
 const updateText = (text) => {
+  if (text.startsWith("# ") || (text.startsWith("[") && text.endsWith("]"))) {
+    text = ""; // comment or blank
+  }
   currentText = text;
   for (const ws of connections) {
     ws.send(text);
