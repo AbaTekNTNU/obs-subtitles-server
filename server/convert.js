@@ -10,9 +10,9 @@ for (const line of content) {
   if (FILTERED_STRINGS.includes(newLine)) {
     continue;
   }
-  if (newLine.toUpperCase() === newLine) {
+  /*if (newLine.toUpperCase() === newLine) {
     newLine = `# ${newLine}`;
-  }
+  }*/
   newLine = newLine.replaceAll("/", "\\n");
   output.push(newLine);
 }

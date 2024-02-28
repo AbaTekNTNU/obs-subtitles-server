@@ -20,3 +20,11 @@ Keyboard shortcuts:
 - v: Disable/enable sending requests
 - m: Go to menu
 - q: Quit
+
+How to write subtitles:
+- Use comments (#) to show lines in terminal but not on the website
+- Use [ ] enclosed comments to show blank lines
+- Use / as as newline
+- Use :: to separate bottom/left/top/right parts
+- Copy text from Docs to subs/raw.txt and run `ǹpm run convert` to create subs/undertekster.txt
+- Open subtitles with `npm run start`

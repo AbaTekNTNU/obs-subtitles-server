@@ -97,7 +97,7 @@ async function runSelector(lines, updateText, file) {
 
 function drawLines(lines, index, disableSend) {
   lines = lines.map((line) => {
-    if (line.startsWith("# ")) return `^Y${line}^`;
+    if (line.startsWith("#")) return `^Y${line}^`;
     if (line.startsWith("[") && line.endsWith("]")) return `^c${line}^`;
     return line;
   });
