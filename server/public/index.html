@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>OBS subtitles streaming</title>
-        <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
         <style>
             body {
                 margin: 0;
@@ -11,11 +11,11 @@
             }
 
             .subtitle-container {
-                display:flex;
-                justify-content:center;
-                align-items:flex-end;
-                width:100%;
-                height:100vh;
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                width: 100%;
+                height: 100vh;
             }
 
             .subtitle {
@@ -26,68 +26,64 @@
                 box-sizing: border-box;
                 text-shadow: 1px 1px 6px #000000;
                 color: white;
-                font-family: 'Roboto', Arial, sans-serif;
-                font-size: 60px;
+                font-family: "Roboto", Arial, sans-serif;
+                font-size: 56px;
                 text-align: center;
-            }
-
-            .subtitle:nth-child(even) {
-                align-items: end;
-                top: 0;
-                bottom: 2em;
-            }
-
-            .subtitle:nth-child(odd) {
-                left: 0;
-                right: 0;
-            }
-
-            .subtitle:nth-child(3) {
-                top: 0;
-            }
-
-            .subtitle:nth-child(4) {
-                right: 0;
-                max-width: 50%;
             }
 
             .subtitle:nth-child(1) {
                 bottom: 0;
+                left: 0;
+                right: 0;
             }
 
             .subtitle:nth-child(2) {
                 left: 0;
+                top: 0;
+                bottom: 0;
+                max-width: 50%;
+            }
+
+            .subtitle:nth-child(3) {
+                top: 0;
+                left: 0;
+                right: 0;
+            }
+
+            .subtitle:nth-child(4) {
+                right: 0;
+                top: 0;
+                bottom: 0;
                 max-width: 50%;
             }
         </style>
         <script>
-            const subColors =
-                [
-                    "#ffffff",
-                    "#ff0000",
-                    "#00ff00",
-                    "#0000ff",
-                    "#ffff00",
-                    "#00ffff",
-                    "#ff00ff",
-                    "#ff8000",
-                    "#ff0080",
-                    "#8000ff",
-                    "#0080ff",
-                    "#00ff80",
-                    "#80ff00",
-                    "#ff8000",
-                    "#ff0080",
-                ];
+            const subColors = [
+                "#ffffff",
+                "#ff0000",
+                "#00ff00",
+                "#0000ff",
+                "#ffff00",
+                "#00ffff",
+                "#ff00ff",
+                "#ff8000",
+                "#ff0080",
+                "#8000ff",
+                "#0080ff",
+                "#00ff80",
+                "#80ff00",
+                "#ff8000",
+                "#ff0080",
+            ];
 
             // Color supports following values:
             // - number: index of the color in the subColors array
             // - random: random color from the subColors array
             // - string: any valid css color
             function getColor(key) {
-                if (typeof key === 'number') {
+                if (typeof key === "number") {
                     return subColors[key % subColors.length];
-                } else if (key === 'random') {
+                } else if (key === "random") {
                     return subColors[Math.floor(Math.random() * subColors.length)];
                 } else if (key) {
                     return key;
@@ -112,16 +108,20 @@
             // A subtitle can contain a json object, which will be used to style the subtitle
             // Example: { "color": "red" } Colored subtitle :: Non-colored subtitle on the left side :: { "color": "blue" } Colored subtitle on the top
             function setSubtitles(subtitles) {
+                if (typeof subtitles !== "string") {
+                    console.error(`Response type ${typeof subtitles} is not "string"`);
+                    return;
+                }
                 const subs = subtitles.split("::");
-                document.querySelectorAll('.subtitle').forEach((el, index) => {
+                document.querySelectorAll(".subtitle").forEach((el, index) => {
                     if (index < subs.length) {
                         const opts = parseOpts(subs[index]);
-                        let sub = subs[index].replace(jsonRegex, '').trim();
+                        const sub = subs[index].replace(jsonRegex, "").trim().replaceAll("\\n", "<br/>");
 
                         el.style.color = getColor(opts.color);
-                        el.textContent = sub;
+                        el.innerHTML = sub;
                     } else {
-                        el.textContent = '';
+                        el.textContent = "";
                     }
                 });
             }
@@ -133,45 +133,47 @@
 
             function getCurrent() {
                 const xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("GET", 'http://192.168.1.143/', true);
+                xmlHttp.open("GET", `http://${location.hostname}:3000/current`, true);
 
                 xmlHttp.onload = () => {
                     setSubtitles(xmlHttp.responseText);
-                }
+                };
 
                 xmlHttp.onerror = () => {
-                    console.log('Error');
-                }
+                    console.log("Error");
+                };
 
                 xmlHttp.send();
             }
 
             function openSocket() {
-                const webSocket = new WebSocket('ws://192.168.1.143:8080');
+                const webSocket = new WebSocket(`ws://${location.hostname}:8080`);
 
                 webSocket.onopen = (event) => {
                     getCurrent();
-                    console.log('connected');
+                    console.log("connected");
                 };
 
                 webSocket.onmessage = (event) => {
                     setSubtitles(event.data);
-                }
+                };
 
                 webSocket.onclose = (event) => {
                     connect();
-                }
+                };
             }
 
+            // fallback
             setInterval(() => {
                 getCurrent();
-            }, 250);
+            }, 500);
 
             connect();
         </script>
     </head>
+
     <body>
-        <div class="subtitle-container" >
+        <div class="subtitle-container">
             <h1 class="subtitle"></h1>
             <h1 class="subtitle"></h1>
             <h1 class="subtitle"></h1>
