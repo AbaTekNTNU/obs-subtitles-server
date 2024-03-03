@@ -17,7 +17,7 @@ for (const line of content) {
   output.push(newLine);
 }
 
-writeFileSync("subs/undertekster2024.txt", output.join("\n"), function (err) {
+writeFileSync("subs/undertekster.txt", output.join("\n"), function (err) {
   if (err) return console.log(err);
   console.log("File is created successfully.");
 });

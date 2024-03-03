@@ -61,6 +61,20 @@ async function runSelector(lines, updateText, file) {
       drawLines(lines, i, disableSend);
     }
 
+    if (name == "PAGE_DOWN") {
+      // proceed much
+      i = Math.min(i + term.height - 4, lines.length - 1);
+      if (!disableSend) updateText(lines[i]);
+      drawLines(lines, i, disableSend);
+    }
+
+    if (name == "PAGE_UP") {
+      // back much
+      i = Math.max(i - term.height + 4, 0);
+      if (!disableSend) updateText(lines[i]);
+      drawLines(lines, i, disableSend);
+    }
+
     if (name == "c") {
       // clear screen
       updateText("");
@@ -97,8 +111,8 @@ async function runSelector(lines, updateText, file) {
 
 function drawLines(lines, index, disableSend) {
   lines = lines.map((line) => {
-    if (line.startsWith("#")) return `^Y${line}^`;
-    if (line.startsWith("[") && line.endsWith("]")) return `^c${line}^`;
+    if (line.startsWith("#")) return `^Y${line}^`; // yellow comments
+    if (line.startsWith("[") && line.endsWith("]")) return `^c${line}^`; // blue blanks
     return line;
   });
   console.log(lines);
@@ -120,6 +134,6 @@ function drawLines(lines, index, disableSend) {
     contentHasMarkup: true,
     textAttr: { bgColor: "default", color: disableSend ? "red" : "default" },
     width: term.width,
-    fit: true,
+    fit: false,
   });
 }
