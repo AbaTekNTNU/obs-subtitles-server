@@ -9,7 +9,7 @@ services:
       - "3000:3000"
   cue:
     build:
-      context: py_scripts
+      context: txt2post
       dockerfile: Dockerfile
     depends_on:
       - server

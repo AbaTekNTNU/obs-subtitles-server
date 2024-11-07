@@ -1,7 +1,7 @@
+**/subs/*
+.DS_Store
 .idea
 server/node_modules
-.DS_Store
-py_scripts/subs/*
-venv
-txt2post/target
 txt2post/subtitles
+txt2post/target
+venv
